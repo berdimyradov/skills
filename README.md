@@ -1,79 +1,105 @@
-# TeamLead AI Skill Suite
+# Skills
 
-Private, evidence-backed team-lead reporting skills for Git and GitHub workflows.
+Personal agent skills for Codex and compatible local agent environments.
 
-This repo contains `SKILL.md` packages that help a code agent produce useful team-lead reports without asking someone to manually inspect every commit, pull request, review, and CI run. The suite focuses on delivery health, review quality, release readiness, estimation calibration, and coaching signals.
+This repository is a small skill workspace. Active skills live in `skills/`.
+Retired or superseded skills live in `_legacy/` for reference.
 
-The skills are designed for private team-lead notes. They should help a lead decide what to inspect, ask, or follow up on; they should not automate people-management decisions.
+## Active Skills
 
-## Skill Catalog
-
-Start with the router when you are not sure which reporter fits:
-
-- [`teamlead-ai-skills`](skills/teamlead-ai-skills/SKILL.md) routes a team-lead reporting request to the right reporter skill.
-
-Use a specific reporter when the request is clear:
-
-| Skill | Use when you need... |
+| Skill | Purpose |
 | --- | --- |
-| [`task-health-reporter`](skills/task-health-reporter/SKILL.md) | A current view of blocked PRs, stale work, ownership gaps, review bottlenecks, and standup follow-ups. |
-| [`velocity-flow-risk-reporter`](skills/velocity-flow-risk-reporter/SKILL.md) | Delivery trend and flow-risk analysis across PR throughput, WIP, batching, cycle-time signals, and review latency. |
-| [`code-review-reporter`](skills/code-review-reporter/SKILL.md) | A private review memo for one PR, local diff, or patch, including risks, edge cases, test gaps, and suggested review comments. |
-| [`release-readiness-reporter`](skills/release-readiness-reporter/SKILL.md) | Go/no-go release guidance from included PRs, open blockers, CI, migrations, config changes, and rollout risk. |
-| [`estimation-calibration-reporter`](skills/estimation-calibration-reporter/SKILL.md) | Estimate-versus-actual analysis, variance drivers, Definition of Done clarity, and future planning calibration. |
-| [`team-coaching-prep-reporter`](skills/team-coaching-prep-reporter/SKILL.md) | One-on-one or retro prep notes from evidence-backed strengths, friction points, caveats, and support signals. |
+| [`spec-driven-agent-loop`](skills/spec-driven-agent-loop/SKILL.md) | Runs Specinator, a local-only Spec Driven AI Loop for applying ready OpenSpec changes through stacked GitHub draft PRs, structured review, review-fix workers, resume, and archive flows. |
 
-## How To Use
+## Specinator
 
-Each skill is a repo-local installable skill package: a directory containing a `SKILL.md` file. To use one in an agent environment that supports local skills, copy the relevant directory from `skills/` into that environment's local skills directory, or point your agent tooling at this repo if it supports loading skills in place.
+Specinator is the user-facing workflow provided by
+[`spec-driven-agent-loop`](skills/spec-driven-agent-loop/SKILL.md). It is built
+for repositories that already use OpenSpec and GitHub pull requests.
 
-Typical usage:
+Use it when you want an agent to:
+
+- Apply one or more ready OpenSpec changes in order.
+- Create one draft GitHub PR per OpenSpec change.
+- Use stacked branches for ordered multi-change runs.
+- Run validation, tests, typechecks, GitHub checks, and structured AI review.
+- Apply required review fixes through isolated worker contexts.
+- Resume a long-running PR stack from a local state file.
+- Create post-merge OpenSpec archive PRs after a human has merged the implementation PRs.
+
+Specinator does not create OpenSpec proposals, merge PRs, deploy code, or make
+product decisions. It stops when it needs human judgment.
+
+## Usage
+
+Install or point your agent environment at the skill directory:
 
 ```text
-Use teamlead-ai-skills to decide what report I need for this sprint.
+skills/spec-driven-agent-loop/
+```
+
+Then invoke the skill by name or by using the Specinator workflow name.
+
+```text
+Use Specinator to apply add-project-dashboard.
 ```
 
 ```text
-Run task-health-reporter for the current repo and open GitHub PRs.
+Use Specinator to apply add-project-dashboard improve-dashboard-filters in order.
 ```
 
 ```text
-Use release-readiness-reporter for release branch release/1.8.0.
+Use Specinator to resume 20260705-143022-add-project-dashboard.
 ```
 
 ```text
-Run code-review-reporter on this patch and give me suggested review comments.
+Use Specinator to archive 20260705-143022-add-project-dashboard.
 ```
 
-The skills are intentionally report-oriented. They gather evidence where possible, explain confidence limits, and produce a decision memo for the team lead.
+The skill supports three explicit modes:
 
-## Inputs And Evidence
+- `apply <change...>`: apply one or more ready OpenSpec changes.
+- `resume <run-id>`: resume from `.scratch/agent-workflows/<run-id>.md`.
+- `archive <run-id>`: create archive PRs after implementation PRs are merged.
 
-The reporters work best with:
+## Requirements
 
-- Git commit history, including authors, timestamps, branches, and changed files.
-- GitHub pull request metadata, including titles, descriptions, authors, reviewers, review states, timestamps, comments, linked issues, checks, and merge state.
-- Local diffs or patch files for code review.
-- CI check names, status, and timestamps.
-- Optional team context such as sprint goals, release scope, estimates, Definition of Done, capacity notes, incidents, support load, or coaching notes.
+Specinator expects the target repository to have:
 
-Every concrete finding should cite evidence: a PR, commit, file path, timestamp, CI check, review state/comment, or an explicit missing-data note. If a source is unavailable, the report should say what is missing and how that limits confidence.
+- OpenSpec installed and configured.
+- A clean Git worktree before `apply`.
+- GitHub access through `gh`.
+- Push and PR creation permissions.
+- Local validation and check commands such as `openspec`, `pnpm test`, and `pnpm typecheck`.
+- Isolated worker or subagent support for implementation and review-fix work.
 
-## Safety And Attribution
+The workflow is intentionally local-first. Its run state is written to
+`.scratch/agent-workflows/<run-id>.md` in the target repository and should not be
+committed.
 
-These skills produce reports by default. They should not assign tasks, update trackers, post PR comments, merge code, create commits, deploy releases, or make people-management decisions unless the user separately asks for that action outside the reporting task.
+## Repository Layout
 
-Contributor names may appear when attribution helps accountability, coordination, or coaching. The skills should:
+```text
+skills/
+  spec-driven-agent-loop/
+    SKILL.md
+    agents/openai.yaml
 
-- Attribute only observable events.
-- Separate facts from interpretation.
-- Include workload, ownership, support load, pairing, review load, or data-gap caveats when relevant.
-- Avoid ranking people by default.
-- Never use commit count, line count, or PR count as direct proof of individual productivity.
-- Keep people-related observations factual, private, and coaching-oriented.
+_legacy/
+  teamlead-ai-skills/
+  task-health-reporter/
+  velocity-flow-risk-reporter/
+  code-review-reporter/
+  release-readiness-reporter/
+  estimation-calibration-reporter/
+  team-coaching-prep-reporter/
+```
 
-## Community Use
+## Legacy Skills
 
-This repo is meant to evolve with real team-lead workflows. Issues and PRs are welcome for new reporter ideas, clearer trigger prompts, better evidence rules, safer attribution guidance, and examples that make the skills easier to use.
+The `_legacy/` directory contains the earlier team-lead reporting suite. Those
+skills produced private, evidence-backed reports for delivery health, review
+quality, release readiness, estimation calibration, and coaching preparation.
 
-When proposing changes, keep the core contract intact: private reports, evidence-backed findings, explicit confidence limits, and no automated workflow or people-management actions by default.
+They remain in the repository for reference, but the active catalog is the
+`skills/` directory.

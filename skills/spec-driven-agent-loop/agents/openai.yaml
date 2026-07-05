@@ -1,0 +1,4 @@
+interface:
+  display_name: "Specinator"
+  short_description: "Spec Driven AI Loop"
+  default_prompt: "Use Specinator to apply, review, fix, resume, and archive OpenSpec changes through GitHub PRs."
